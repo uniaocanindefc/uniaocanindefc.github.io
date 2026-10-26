@@ -1,0 +1,12 @@
+App União Canindé F.C. (PWA)
+
+Como publicar no GitHub Pages:
+1. No GitHub, crie a organização uniaocanindefc (ou use sua conta).
+2. Crie o repositório uniaocanindefc.github.io (público).
+3. Envie TODOS os arquivos desta pasta para a raiz do repositório (Add file > Upload files).
+4. Em Settings > Pages, escolha "Deploy from a branch", branch main, pasta / (root).
+5. Em 1 a 2 minutos o app fica em https://uniaocanindefc.github.io
+
+Como instalar no celular:
+- Android (Chrome): abra o link e toque em "Instalar app" ou menu ⋮ > "Adicionar à tela inicial".
+- iPhone (Safari): abra o link, toque em Compartilhar > "Adicionar à Tela de Início".
