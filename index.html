@@ -504,10 +504,8 @@ function vJogos(){
   <section><h2>Resultados</h2><p class="sub">${s.v} vitórias, ${s.e} empates e ${s.d} derrotas · saldo ${s.gp-s.gc>=0?'+':''}${s.gp-s.gc}</p><div class="panel">${RES().length?RES().slice().reverse().map(linhaJogo).join(''):'<p class="note">Nenhum resultado ainda.</p>'}</div></section>`;
 }
 function vElenco(){
-  const ordem=['Titular','Reserva','Goleiro','Defesa','Meio-campo','Ataque','Comissão técnica'];
-  const grupos={}; S.elenco.forEach(p=>{(grupos[p.pos]=grupos[p.pos]||[]).push(p)});
-  const keys=Object.keys(grupos).sort((a,b)=>(ordem.indexOf(a)+99)%99-(ordem.indexOf(b)+99)%99);
-  return `<section><div class="squad-h"><h2 id="sq-t">Elenco 2026</h2></div><p class="sub">${S.elenco.length} atletas inscritos no Municipal 2026 · ⚽ gols · 👟 assistências</p>${keys.map(k=>`<div class="group-t">${esc(k)}</div><div class="squad">${grupos[k].map(p=>`<div class="player">${p.foto?`<span class="ph"><img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy"><span class="n num">${esc(p.num)}</span></span>`:`<div class="n num">${esc(p.num)}</div>`}${p.reforco?'<span class="badge">Reforço</span>':''}<span class="flash"></span><div class="nm">${esc(p.nome)}</div><div class="ps">${esc(p.pos)}</div>${(+p.gols||+p.assist)?`<div class="st"><span>⚽ <b>${+p.gols||0}</b></span><span>👟 <b>${+p.assist||0}</b></span></div>`:''}</div>`).join('')}</div>`).join('')}</section>`;
+  const L=S.elenco.slice().sort((a,b)=>(+a.num||99)-(+b.num||99));
+  return `<section><div class="squad-h"><h2 id="sq-t">Elenco 2026</h2></div><p class="sub">${L.length} atletas inscritos no Municipal 2026 · ⚽ gols · 👟 assistências</p><div class="squad">${L.map(p=>`<div class="player">${p.foto?`<span class="ph"><img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy"><span class="n num">${esc(p.num)}</span></span>`:`<div class="n num">${esc(p.num)}</div>`}${p.reforco?'<span class="badge">Reforço</span>':''}<span class="flash"></span><div class="nm">${esc(p.nome)}</div>${(+p.gols||+p.assist)?`<div class="st"><span>⚽ <b>${+p.gols||0}</b></span><span>👟 <b>${+p.assist||0}</b></span></div>`:''}</div>`).join('')}</div></section>`;
 }
 function vTorcida(){
   const p=S.proximo, casa=p.mando!=='fora';
@@ -551,7 +549,7 @@ function vNoticias(){return `<section><h2>Notícias</h2><div class="news">${S.no
 const SIL='<svg viewBox="0 0 100 90" aria-hidden="true"><path d="M50 6c11 0 19 9 19 20s-8 21-19 21-19-10-19-21S39 6 50 6z" fill="rgba(12,13,19,.55)"/><path d="M8 90c2-20 18-32 42-32s40 12 42 32z" fill="rgba(12,13,19,.55)"/><path d="M38 60l12 14 12-14" fill="none" stroke="#D9A22E" stroke-width="3"/></svg>';
 function stickers(){
   const list=[{id:'escudo',num:'00',nome:'Escudo',pos:'União Canindé F.C.',holo:true,esc:true}];
-  S.elenco.slice().sort((a,b)=>(+a.num||99)-(+b.num||99)).forEach(p=>list.push({id:'p'+p.num,num:p.num,nome:p.nome,pos:p.reforco?'Reforço 2026':p.pos,holo:!!p.reforco}));
+  S.elenco.slice().sort((a,b)=>(+a.num||99)-(+b.num||99)).forEach(p=>list.push({id:'p'+p.num,num:p.num,nome:p.nome,pos:p.reforco?'Reforço 2026':'União Canindé',holo:!!p.reforco}));
   return list;
 }
 function stkHTML(k){
@@ -854,7 +852,7 @@ let D;
 const LISTS={
   agenda:{t:'Próximos jogos',f:[['data','Data','date'],['hora','Hora','time'],['adversario','Adversário'],['mando','Mando','sel:casa,fora'],['local','Local'],['competicao','Competição'],['categoria','Categoria','sel:1º Quadro,2º Quadro,Veterano']],novo:{data:'',hora:'16:00',adversario:'',mando:'casa',local:'',competicao:'Amistoso',categoria:'1º Quadro'}},
   resultados:{t:'Resultados',f:[['data','Data','date'],['adversario','Adversário'],['mando','Mando','sel:casa,fora'],['gp','Gols do União','number'],['gc','Gols do adversário','number'],['competicao','Competição']],novo:{data:'',adversario:'',mando:'casa',gp:0,gc:0,competicao:''}},
-  elenco:{t:'Elenco',f:[['num','Número'],['nome','Nome'],['pos','Posição','sel:Titular,Reserva,Goleiro,Defesa,Meio-campo,Ataque,Comissão técnica'],['reforco','Reforço','check'],['gols','Gols','number'],['assist','Assistências','number'],['foto','Foto do jogador','logo']],novo:{num:'',nome:'',pos:'Reserva',reforco:false,gols:0,assist:0,foto:''}},
+  elenco:{t:'Elenco',f:[['num','Número'],['nome','Nome'],['reforco','Reforço','check'],['gols','Gols','number'],['assist','Assistências','number'],['foto','Foto do jogador','logo']],novo:{num:'',nome:'',pos:'Reserva',reforco:false,gols:0,assist:0,foto:''}},
   patrocinadores:{t:'Patrocinadores',f:[['nome','Nome da empresa'],['cota','Cota','sel:Master,Apoiador,Digital'],['segmento','Ramo'],['instagram','Instagram (sem @)'],['whatsapp','WhatsApp'],['descricao','Descrição curta','area'],['logo','Logo','logo']],novo:{nome:'',cota:'Apoiador',segmento:'',descricao:'',instagram:'',whatsapp:'',logo:''}},
   'grupo.jogos':{t:'Jogos do grupo (classificação)',f:[['data','Data','date'],['hora','Hora','time'],['rodada','Rodada'],['casa','Mandante','TEAMS'],['fora','Visitante','TEAMS'],['jogado','Jogo já aconteceu','check'],['gc','Gols mandante','number'],['gf','Gols visitante','number'],['cac','Amarelos mandante','number'],['caf','Amarelos visitante','number'],['cvc','Vermelhos mandante','number'],['cvf','Vermelhos visitante','number']],novo:{data:'',hora:'',rodada:'',casa:'',fora:'',jogado:false,gc:0,gf:0,cac:0,caf:0,cvc:0,cvf:0}},
   noticias:{t:'Notícias',f:[['data','Data','date'],['titulo','Título'],['texto','Texto','area']],novo:{data:new Date().toISOString().slice(0,10),titulo:'',texto:''}}
