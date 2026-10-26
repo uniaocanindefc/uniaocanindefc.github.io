@@ -411,6 +411,15 @@ table.cls{border-collapse:collapse;width:100%;min-width:560px;font-variant-numer
 .pick button[aria-pressed="true"]{border-color:var(--ouro);background:color-mix(in srgb,var(--ouro) 16%,var(--surface-2))}
 .pick button:active{transform:scale(.96)}
 
+/* ===== elenco: fotos e entrada ===== */
+.player .ph{position:relative;display:block;aspect-ratio:4/5;max-width:calc(100% + 24px);margin:-12px -12px 6px;border-radius:7px 7px 0 0;overflow:hidden;background:radial-gradient(circle at 50% 30%,#A8384A,#3F121B 80%)}
+.player .ph img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;display:block}
+.player .ph::after{content:"";position:absolute;inset:auto 0 0;height:45%;background:linear-gradient(transparent,rgba(12,13,19,.85))}
+.player .ph .n{position:absolute;left:10px;bottom:4px;z-index:1;color:#FFE3A1;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.player .flash{position:absolute;inset:0;border-radius:8px;pointer-events:none;background:radial-gradient(circle at 50% 40%,rgba(255,227,161,.55),transparent 65%);opacity:0}
+.squad-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.gs #view .player,.gs #view .group-t{animation:none}
+
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{transition:none!important;animation:none!important}.card3d .in{transform:none;opacity:1}}
 </style>
 
@@ -498,7 +507,7 @@ function vElenco(){
   const ordem=['Titular','Reserva','Goleiro','Defesa','Meio-campo','Ataque','Comissão técnica'];
   const grupos={}; S.elenco.forEach(p=>{(grupos[p.pos]=grupos[p.pos]||[]).push(p)});
   const keys=Object.keys(grupos).sort((a,b)=>(ordem.indexOf(a)+99)%99-(ordem.indexOf(b)+99)%99);
-  return `<section><h2>Elenco 2026</h2><p class="sub">${S.elenco.length} atletas inscritos no Municipal 2026 · ⚽ gols · 👟 assistências</p>${keys.map(k=>`<div class="group-t">${esc(k)}</div><div class="squad">${grupos[k].map(p=>`<div class="player">${p.reforco?'<span class="badge">Reforço</span>':''}<div class="n num">${esc(p.num)}</div><div class="nm">${esc(p.nome)}</div><div class="ps">${esc(p.pos)}</div>${(+p.gols||+p.assist)?`<div class="st"><span>⚽ <b>${+p.gols||0}</b></span><span>👟 <b>${+p.assist||0}</b></span></div>`:''}</div>`).join('')}</div>`).join('')}</section>`;
+  return `<section><div class="squad-h"><h2 id="sq-t">Elenco 2026</h2></div><p class="sub">${S.elenco.length} atletas inscritos no Municipal 2026 · ⚽ gols · 👟 assistências</p>${keys.map(k=>`<div class="group-t">${esc(k)}</div><div class="squad">${grupos[k].map(p=>`<div class="player">${p.foto?`<span class="ph"><img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy"><span class="n num">${esc(p.num)}</span></span>`:`<div class="n num">${esc(p.num)}</div>`}${p.reforco?'<span class="badge">Reforço</span>':''}<span class="flash"></span><div class="nm">${esc(p.nome)}</div><div class="ps">${esc(p.pos)}</div>${(+p.gols||+p.assist)?`<div class="st"><span>⚽ <b>${+p.gols||0}</b></span><span>👟 <b>${+p.assist||0}</b></span></div>`:''}</div>`).join('')}</div>`).join('')}</section>`;
 }
 function vTorcida(){
   const p=S.proximo, casa=p.mando!=='fora';
@@ -766,6 +775,23 @@ function duelAnim(){
   }
 }
 
+/* ===== Elenco: entrada estilo confronto ===== */
+function elencoAnim(){
+  const G=window.gsap; if(!G||matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const v=$('#view'), cards=[...v.querySelectorAll('.player')]; if(!cards.length) return;
+  const tl=G.timeline({defaults:{ease:'power3.out'}});
+  tl.from('#sq-t',{scale:2.4,opacity:0,duration:.5,ease:'expo.out'});
+  v.querySelectorAll('.group-t').forEach(gt=>tl.from(gt,{x:-40,opacity:0,duration:.35},'-=.2'));
+  cards.forEach((c,i)=>{
+    const left=i%2===0, n=c.querySelector('.n'), f=c.querySelector('.flash'), at=i===0?'-=.1':'<+=0.07';
+    tl.from(c,{x:left?-140:140,rotation:left?-12:12,opacity:0,duration:.7,ease:'back.out(1.7)'},at);
+    if(n) tl.from(n,{scale:3,opacity:0,duration:.45,ease:'expo.out'},'<+=0.25');
+    if(f) tl.fromTo(f,{opacity:.9,scale:.6},{opacity:0,scale:1.4,duration:.6,ease:'power2.out'},'<');
+  });
+  tl.timeScale(cards.length>12?1.5:1);
+}
+try{ if(window.gsap) document.documentElement.classList.add('gs'); }catch(e){}
+
 const VIEWS={inicio:vInicio,jogos:vJogos,elenco:vElenco,torcida:vTorcida,classificacao:vClass,album:vAlbum,patrocinadores:vPatrocinadores,apoie:vApoie,noticias:vNoticias};
 
 function render(){
@@ -788,6 +814,7 @@ function renderView(swap){
   countUp(v);
   if(tab==='album') albumTick();
   if(tab==='jogos') duelAnim();
+  if(tab==='elenco') elencoAnim();
 }
 function countUp(root){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -827,7 +854,7 @@ let D;
 const LISTS={
   agenda:{t:'Próximos jogos',f:[['data','Data','date'],['hora','Hora','time'],['adversario','Adversário'],['mando','Mando','sel:casa,fora'],['local','Local'],['competicao','Competição'],['categoria','Categoria','sel:1º Quadro,2º Quadro,Veterano']],novo:{data:'',hora:'16:00',adversario:'',mando:'casa',local:'',competicao:'Amistoso',categoria:'1º Quadro'}},
   resultados:{t:'Resultados',f:[['data','Data','date'],['adversario','Adversário'],['mando','Mando','sel:casa,fora'],['gp','Gols do União','number'],['gc','Gols do adversário','number'],['competicao','Competição']],novo:{data:'',adversario:'',mando:'casa',gp:0,gc:0,competicao:''}},
-  elenco:{t:'Elenco',f:[['num','Número'],['nome','Nome'],['pos','Posição','sel:Titular,Reserva,Goleiro,Defesa,Meio-campo,Ataque,Comissão técnica'],['reforco','Reforço','check'],['gols','Gols','number'],['assist','Assistências','number']],novo:{num:'',nome:'',pos:'Reserva',reforco:false,gols:0,assist:0}},
+  elenco:{t:'Elenco',f:[['num','Número'],['nome','Nome'],['pos','Posição','sel:Titular,Reserva,Goleiro,Defesa,Meio-campo,Ataque,Comissão técnica'],['reforco','Reforço','check'],['gols','Gols','number'],['assist','Assistências','number'],['foto','Foto do jogador','logo']],novo:{num:'',nome:'',pos:'Reserva',reforco:false,gols:0,assist:0,foto:''}},
   patrocinadores:{t:'Patrocinadores',f:[['nome','Nome da empresa'],['cota','Cota','sel:Master,Apoiador,Digital'],['segmento','Ramo'],['instagram','Instagram (sem @)'],['whatsapp','WhatsApp'],['descricao','Descrição curta','area'],['logo','Logo','logo']],novo:{nome:'',cota:'Apoiador',segmento:'',descricao:'',instagram:'',whatsapp:'',logo:''}},
   'grupo.jogos':{t:'Jogos do grupo (classificação)',f:[['data','Data','date'],['hora','Hora','time'],['rodada','Rodada'],['casa','Mandante','TEAMS'],['fora','Visitante','TEAMS'],['jogado','Jogo já aconteceu','check'],['gc','Gols mandante','number'],['gf','Gols visitante','number'],['cac','Amarelos mandante','number'],['caf','Amarelos visitante','number'],['cvc','Vermelhos mandante','number'],['cvf','Vermelhos visitante','number']],novo:{data:'',hora:'',rodada:'',casa:'',fora:'',jogado:false,gc:0,gf:0,cac:0,caf:0,cvc:0,cvf:0}},
   noticias:{t:'Notícias',f:[['data','Data','date'],['titulo','Título'],['texto','Texto','area']],novo:{data:new Date().toISOString().slice(0,10),titulo:'',texto:''}}
