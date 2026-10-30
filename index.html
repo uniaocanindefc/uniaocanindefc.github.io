@@ -488,6 +488,8 @@ table.cls{border-collapse:collapse;width:100%;min-width:560px;font-variant-numer
 .sheet details summary small{color:var(--muted);font-weight:400;margin-left:auto}
 .sheet details>div{padding:0 12px 12px;display:grid;gap:10px}
 .ficha .apel{font-family:var(--f-num);font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,246,232,.85);margin-top:6px}
+.mc.sh svg{width:100%;height:100%;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.flam .pano .mc.sh{width:62%;aspect-ratio:100/116;height:auto}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{transition:none!important;animation:none!important}.card3d .in{transform:none;opacity:1}}
 </style>
 
@@ -781,7 +783,9 @@ function leaderHTML(){
 
 /* ===== Escudos e confronto ===== */
 function TM(n){const T=S.times||{};const k=Object.keys(T).find(k=>k.toLowerCase()===String(n||'').toLowerCase());const t=k?T[k]:{};return {cor:t.cor||'#3a3b48',cor2:t.cor2||'#1d1e29',apelido:t.apelido||'',escudo:isUs(n)?CREST_SRC:(t.escudo||'')};}
-function crestImg(n,size){const t=TM(n),sz=size?`width:${size}px;height:${size}px;`:'';return t.escudo?`<span class="mc" style="${sz}"><img src="${t.escudo}" alt="Escudo ${esc(n)}"></span>`:`<span class="mc ini" style="${sz}font-size:${Math.round((size||40)*.38)}px" aria-hidden="true">${esc(initials(n))}</span>`;}
+function shieldSVG(n){const c=(typeof tColor==='function'?tColor(n):{c:TM(n).cor}).c,ini=esc(initials(n)),fs=ini.length>2?30:ini.length>1?36:44;
+  return `<svg viewBox="0 0 100 116" class="shd" aria-hidden="true"><defs><linearGradient id="g${ini}${n.length}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}"/><stop offset="1" stop-color="#0d0d12"/></linearGradient></defs><path d="M50 3 95 15v40c0 30-20 48-45 58C25 103 5 85 5 55V15z" fill="#D9A22E"/><path d="M50 10 88 20v35c0 26-17 41-38 50-21-9-38-24-38-50V20z" fill="url(#g${ini}${n.length})"/><path d="M12 62h76" stroke="rgba(255,255,255,.18)" stroke-width="2"/><text x="50" y="${fs>40?66:62}" text-anchor="middle" font-family="Big Shoulders Display,Impact,sans-serif" font-weight="900" font-size="${fs}" fill="#fff">${ini}</text><path d="M50 84l3 6 6 .8-4.5 4.2 1.1 6.4L50 98.4l-5.6 3 1.1-6.4L41 90.8l6-.8z" fill="#D9A22E"/></svg>`;}
+function crestImg(n,size){const t=TM(n),sz=size?`width:${size}px;height:${size}px;`:'';return t.escudo?`<span class="mc" style="${sz}"><img src="${t.escudo}" alt="Escudo ${esc(n)}"></span>`:`<span class="mc sh" style="${sz}" role="img" aria-label="Escudo provisório ${esc(n)}">${shieldSVG(n)}</span>`;}
 function usGames(){return ((S.grupo||{}).jogos||[]).map((g,i)=>({...g,i})).filter(g=>isUs(g.casa)||isUs(g.fora));}
 let duelIdx=null;
 function curDuel(){const L=usGames(); if(!L.length) return null; if(duelIdx==null){const n=L.find(g=>!g.jogado); duelIdx=(n||L[L.length-1]).i;} return L.find(g=>g.i===duelIdx)||L[0];}
@@ -871,7 +875,7 @@ function tColor(n){const t=TM(n);if(isUs(n))return {c:'#7A2531',c2:'#D9A22E'};co
 function vTimes(){
   return `<section><h2>Times</h2><p class="sub">Os 12 clubes do 1º Quadro no Municipal 2026. Toque numa flâmula para ver a ficha do time.</p>
   <div class="varal">${GKEYS.map(k=>{const G=GRP(k),L=tabela(G);return `<div class="vgrp"><h3>${esc(G.nome)}<small>${k==='B'?'· grupo do União':''}</small></h3><div class="corda">${G.times.map(n=>{const c=tColor(n),p=L.findIndex(t=>t.nome===n)+1,t=L[p-1]||{pts:0};return `<button class="flam${isUs(n)?' us':''}" data-team="${esc(n)}" style="--c:${c.c};--c2:${c.c2}" aria-label="Ficha do ${esc(n)}"><span class="pin"></span><span class="pano">${crestImg(n)}</span><b>${esc(n)}</b><small>${p}º · ${t.pts} pts</small></button>`}).join('')}</div></div>`}).join('')}</div>
-  <p class="note">Os clubes sem escudo aparecem com as iniciais até a gente receber a arte de cada um.</p></section>`;
+  <p class="note">Os clubes sem escudo oficial aparecem com um escudo provisório com as iniciais até a gente receber a arte de cada um.</p></section>`;
 }
 function timesAnim(){
   const G=window.gsap; if(!G||matchMedia('(prefers-reduced-motion: reduce)').matches) return;
