@@ -502,6 +502,17 @@ table.cls{border-collapse:collapse;width:100%;min-width:560px;font-variant-numer
 .hsp-t:hover{transform:translateY(-3px)}
 @media (max-width:480px){.hsp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+/* elenco compacto: todos visíveis */
+#view .squad{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+#view .player{padding:8px;gap:2px;border-radius:8px}
+#view .player .ph{aspect-ratio:1/1;max-width:calc(100% + 16px);margin:-8px -8px 4px}
+#view .player .ph .n{font-size:24px;left:6px;bottom:2px}
+#view .player>.n{font-size:28px}
+#view .player .nm{font-size:13px;line-height:1.15}
+#view .player .badge{top:6px;right:6px;font-size:9px;padding:1px 5px;letter-spacing:.06em;animation:none}
+#view .player .st{font-size:12px;gap:6px}
+@media (min-width:700px){#view .squad{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
+
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{transition:none!important;animation:none!important}.card3d .in{transform:none;opacity:1}}
 </style>
 
@@ -869,16 +880,9 @@ function duelAnim(){
 function elencoAnim(){
   const G=window.gsap; if(!G||matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const v=$('#view'), cards=[...v.querySelectorAll('.player')]; if(!cards.length) return;
-  const tl=G.timeline({defaults:{ease:'power3.out'}});
-  tl.from('#sq-t',{scale:2.4,opacity:0,duration:.5,ease:'expo.out'});
-  v.querySelectorAll('.group-t').forEach(gt=>tl.from(gt,{x:-40,opacity:0,duration:.35},'-=.2'));
-  cards.forEach((c,i)=>{
-    const left=i%2===0, n=c.querySelector('.n'), f=c.querySelector('.flash'), at=i===0?'-=.1':'<+=0.07';
-    tl.from(c,{x:left?-140:140,rotation:left?-12:12,opacity:0,duration:.7,ease:'back.out(1.7)'},at);
-    if(n) tl.from(n,{scale:3,opacity:0,duration:.45,ease:'expo.out'},'<+=0.25');
-    if(f) tl.fromTo(f,{opacity:.9,scale:.6},{opacity:0,scale:1.4,duration:.6,ease:'power2.out'},'<');
-  });
-  tl.timeScale(cards.length>12?1.5:1);
+  G.from('#sq-t',{scale:1.8,opacity:0,duration:.45,ease:'expo.out'});
+  G.from(cards,{y:24,scale:.85,opacity:0,duration:.5,ease:'back.out(1.6)',stagger:{each:.03,grid:'auto',from:'start'},clearProps:'transform,opacity'});
+  cards.forEach((c,i)=>{const f=c.querySelector('.flash');if(f)G.fromTo(f,{opacity:.8,scale:.6},{opacity:0,scale:1.4,duration:.6,delay:.2+i*.03});});
 }
 try{ if(window.gsap) document.documentElement.classList.add('gs'); }catch(e){}
 
