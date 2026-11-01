@@ -656,8 +656,11 @@ function vNoticias(){return `<section><h2>Notícias</h2><div class="news">${S.no
 
 /* ===== Álbum de figurinhas ===== */
 const SIL='<svg viewBox="0 0 100 90" aria-hidden="true"><path d="M50 6c11 0 19 9 19 20s-8 21-19 21-19-10-19-21S39 6 50 6z" fill="rgba(12,13,19,.55)"/><path d="M8 90c2-20 18-32 42-32s40 12 42 32z" fill="rgba(12,13,19,.55)"/><path d="M38 60l12 14 12-14" fill="none" stroke="#D9A22E" stroke-width="3"/></svg>';
+let albQ=(()=>{try{return localStorage.getItem('uc:albq')==='2'?2:1}catch(e){return 1}})();
+const ALBKEY=()=>albQ===2?'album2':'album';
 function stickers(){
-  const list=[{id:'escudo',num:'00',nome:'Escudo',pos:'União Canindé F.C.',holo:true,esc:true}];
+  const list=[{id:'escudo',num:'00',nome:'Escudo',pos:albQ===2?'2º Quadro':'União Canindé F.C.',holo:true,esc:true}];
+  if(albQ===2){(S.elenco2||[]).slice().sort((a,b)=>(+a.num||99)-(+b.num||99)).forEach(p=>list.push({id:'q2p'+p.num,num:p.num,nome:p.nome,pos:p.goleiro?'Goleiro · 2º Quadro':'2º Quadro',foto:p.foto||'',holo:!!p.goleiro}));return list;}
   S.elenco.slice().sort((a,b)=>(+a.num||99)-(+b.num||99)).forEach(p=>list.push({id:'p'+p.num,num:p.num,nome:p.nome,pos:p.reforco?'Reforço 2026':'União Canindé',foto:p.foto||'',holo:!!p.reforco}));
   return list;
 }
@@ -666,14 +669,15 @@ function stkHTML(k){
   return `<span class="stk${k.holo?' holo':''}"><span class="s-num">${esc(k.num)}</span>${k.foto?`<img class="s-ph" src="${k.foto}" alt="">`:''}<span class="s-cr"></span>${k.foto?'':SIL}<span class="s-name"><b>${esc(k.nome)}</b><i>${esc(k.pos)}</i></span></span>`;
 }
 const todayKey=()=>{try{return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Maceio'}).format(new Date())}catch(e){return new Date(Date.now()-3*3600e3).toISOString().slice(0,10)}};
-function albumState(){const a=LS.get('album',{owned:[],last:'',fresh:[]});a.owned=a.owned||[];a.fresh=a.fresh||[];return a;}
+function albumState(){const a=LS.get(ALBKEY(),{owned:[],last:'',fresh:[]});a.owned=a.owned||[];a.fresh=a.fresh||[];return a;}
 function canOpen(a){const all=stickers();return a.last!==todayKey() && a.owned.length<all.length;}
 function vAlbum(){
   const a=albumState(), all=stickers(), have=new Set(a.owned), n=all.filter(k=>have.has(k.id)).length, done=n===all.length;
   const ok=canOpen(a);
   const first=a.owned.length===0;
   const pct=Math.round(n/all.length*100);
-  return `<section><h2>Álbum do União 2026</h2><p class="sub">Um pacote novo por dia. Complete as ${all.length} figurinhas do elenco. Reforços saem em versão brilhante.</p>
+  const sw=`<div class="qsw" role="tablist" aria-label="Álbum">${[1,2].map(q=>`<button role="tab" data-albq="${q}" aria-selected="${albQ===q}">${q}º Quadro</button>`).join('')}<i style="transform:translateX(${albQ===2?100:0}%)"></i></div>`;
+  return `<section><div class="squad-h"><h2>Álbum do União 2026</h2>${sw}</div><p class="sub">${albQ}º Quadro · um pacote novo por dia em cada álbum. Complete as ${all.length} figurinhas. ${albQ===2?'Goleiros':'Reforços'} saem em versão brilhante.</p>
   <div class="panel album-top"><div class="prog"><div><b>${n}</b><span class="note"> / ${all.length} figurinhas</span></div><span class="note">${pct}% do álbum</span></div><div class="goal-bar"><div data-w="${pct}" style="width:0"></div></div></div>
   <div class="panel packzone">
     ${done?`<h3 style="font-size:26px;text-transform:uppercase;color:var(--ouro)">Álbum completo!</h3><p class="sub">Você colou todas as figurinhas. Mostra para a torcida no Instagram @${esc(S.clube.instagram)}.</p>`:
@@ -699,7 +703,7 @@ function openPack(){
   const all=stickers(), have=new Set(a.owned), pool=all.filter(k=>!have.has(k.id));
   const qty=a.owned.length===0?3:1, got=[];
   for(let i=0;i<qty&&pool.length;i++){got.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);}
-  a.owned=a.owned.concat(got.map(k=>k.id)); a.last=todayKey(); a.fresh=got.map(k=>k.id); LS.set('album',a);
+  a.owned=a.owned.concat(got.map(k=>k.id)); a.last=todayKey(); a.fresh=got.map(k=>k.id); LS.set(ALBKEY(),a);
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ov=document.createElement('div'); ov.className='ov'; ov.setAttribute('role','dialog'); ov.setAttribute('aria-label','Abrindo pacote');
   ov.innerHTML=`<div class="rays"></div><div class="burst"></div><div class="stage"><h3 id="ov-t">Abrindo…</h3><button class="pack" id="ov-pack" aria-hidden="true" tabindex="-1"><span class="pk-crest"></span><span class="pk-s"></span><span class="pk-t">Pacote do dia</span></button><div class="fan" hidden>${got.map(k=>`<div class="card3d"><div class="in"><div class="face">${stkHTML(k)}</div><div class="back"></div></div></div>`).join('')}</div><button class="btn" id="pack-done" hidden>Colar no álbum</button></div>`;
@@ -724,7 +728,7 @@ function confetti(box){
 }
 document.addEventListener('click',e=>{
   const t=e.target.closest('#pack-open,#pack-open2,#pack-done'); if(!t) return;
-  if(t.id==='pack-done'){const ov=$('.ov');if(ov)ov.remove();renderView(false);const f=$('.slot.fresh');if(f)f.scrollIntoView({behavior:'smooth',block:'center'});const a=albumState();a.fresh=[];LS.set('album',a);return;}
+  if(t.id==='pack-done'){const ov=$('.ov');if(ov)ov.remove();renderView(false);const f=$('.slot.fresh');if(f)f.scrollIntoView({behavior:'smooth',block:'center'});const a=albumState();a.fresh=[];LS.set(ALBKEY(),a);return;}
   openPack();
 });
 
@@ -1009,9 +1013,10 @@ function tick(){
 }
 
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-quadro],[data-duel],[data-pick],[data-sp],[data-tab],[data-go],[data-craque],[data-enq],#g-save,#pix-copy,#edit-open');
+  const t=e.target.closest('[data-albq],[data-quadro],[data-duel],[data-pick],[data-sp],[data-tab],[data-go],[data-craque],[data-enq],#g-save,#pix-copy,#edit-open');
   if(!t) return;
   if(t.dataset.sp!=null){go('patrocinadores');setTimeout(()=>{const c=$('#sp-'+t.dataset.sp);if(c)c.scrollIntoView({behavior:'smooth',block:'center'})},80);return;}
+  if(t.dataset.albq){albQ=+t.dataset.albq;try{localStorage.setItem('uc:albq',albQ)}catch(e){}return renderView(false);}
   if(t.dataset.quadro){quadro=+t.dataset.quadro;try{localStorage.setItem('uc:quadro',quadro)}catch(e){}return renderView(false);}
   if(t.dataset.duel!=null){duelIdx=+t.dataset.duel;return renderView(false);}
   if(t.dataset.pick){const g=curDuel();LS.set('duelo:'+g.i+':'+g.data,t.dataset.pick);const y=scrollY;renderView(false);scrollTo(0,y);return;}
